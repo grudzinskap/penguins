@@ -1,0 +1,5 @@
+SOUNDS 1
+MUSIC 1
+LANGUAGE 1
+----------
+Type 0 to turn off SOUNDS/MUSIC or change LANGUAGE to Polish.
