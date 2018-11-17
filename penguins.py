@@ -434,13 +434,14 @@ class Game:
         if self.english:
             if self.home_penguins / self.penguin_number > 0.4:
                 draw_text(self.screen, "YOU WON!", 48, WIDTH / 2, HEIGHT / 4, 0)
+                if self.level < 3: draw_text(self.screen, "Try your luck at a higher level :)", 25, WIDTH / 2, HEIGHT / 4 + 60, 0)
             else: draw_text(self.screen, "GAME OVER", 48, WIDTH / 2, HEIGHT / 4, 0)
             draw_text(self.screen, "Score: " + str(int(100 * self.home_penguins / self.penguin_number)) + '%', 22, WIDTH / 2, HEIGHT / 2, 0)
             draw_text(self.screen, "Needed: " + '50%', 22, WIDTH / 2, HEIGHT / 2 + 100, 0)
         else:
             if self.home_penguins / self.penguin_number > 0.4:
                 draw_text(self.screen, "ZWYCIĘSTWO!", 48, WIDTH / 2, HEIGHT / 4, 0)
-                if self.level < 3: draw_text(self.screen, "Spróbuj szczęścia na wyższym poziomie :)", 30, WIDTH / 2, HEIGHT / 4 - 40, 0)
+                if self.level < 3: draw_text(self.screen, "Spróbuj szczęścia na wyższym poziomie :)", 25, WIDTH / 2, HEIGHT / 4 + 60, 0)
             else: draw_text(self.screen, "GRA SKOŃCZONA", 48, WIDTH / 2, HEIGHT / 4, 0)
             draw_text(self.screen, "Wynik: " + str(int(100 * self.home_penguins / self.penguin_number)) + '%', 22, WIDTH / 2, HEIGHT / 2, 0)
             draw_text(self.screen, "Wymagany wynik: " + '50%', 22, WIDTH / 2, HEIGHT / 2 + 100, 0)
