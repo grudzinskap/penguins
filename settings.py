@@ -3,25 +3,20 @@ import pygame as pg
 pg.init()
 pg.mixer.init()
 
-# game options/settings
 TITLE = "Penguins!"
 WIDTH = 1100
 HEIGHT = 600
 FPS = 50
 
-# define colors
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
-GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
-YELLOW = (255, 255, 0)
 LIGHTBLUE = (173, 224, 255)
 BGCOLOR = LIGHTBLUE
 GREY = (44, 50, 61)
 
 # images
-
 #penguins
 p = 12
 image_u = pg.image.load('penguin_jump2.png')
@@ -40,7 +35,6 @@ image_p_w2_l = pg.transform.flip(image_p_w2_r, True, False)
 
 image_p_stop = pg.image.load('stop.png')
 image_p_stop = pg.transform.scale(image_p_stop, (640//p, 576//p))
-
 
 # buttons
 pb = 5
@@ -67,7 +61,6 @@ image_b = pg.transform.scale(image_b, (300//pb, 284//pb))
 image_b_p = pg.image.load('bum_button_pushed.png')
 image_b_p = pg.transform.scale(image_b_p, (300//pb, 284//pb))
 bum_images = [image_b, image_b_p]
-
 
 # other
 s = pg.image.load('s.png')
@@ -97,7 +90,6 @@ for i in range(9):
     img = pg.transform.scale(img, (152//2, 150//2))
     img.set_colorkey(BLACK)
     image_explosion.append(img)
-
 
 image_cloud_1 = pg.image.load('cloud1.png')
 image_cloud_1 = pg.transform.scale(image_cloud_1, ((2 * 128)//3, (2 * 71)//3))

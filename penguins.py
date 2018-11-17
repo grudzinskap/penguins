@@ -1,40 +1,44 @@
+# -*- coding: utf-8 -*-
 import pygame as pg
-import random
 from settings import *
 from sprites import *
 
 class Game:
-    def __init__(self, l):
-        # initialize game window, etc
+    def __init__(self):
         pg.init()
         pg.mixer.init()
         self.screen = pg.display.set_mode((WIDTH, HEIGHT))
         pg.display.set_caption(TITLE)
         self.clock = pg.time.Clock()
         self.running = True
-        self.last_penguin = 0
+        self.sounds = False
+        self.music = False
+        self.english = False
+        self.level = 1
+        self.center = (WIDTH / 2, 5)
+
+        # game parameters
         self.penguin_number = 10
-        self.penguin_home_number = 0
-        self.current_penguin_number = 0
-        self.stop_button = False
-        self.umbrella_button = False
-        self.bomb_button = False
-        self.any_powerup_button = False
-        self.home_penguins = 0
         self.bomb_number = 5
         self.umbrella_number = 5
         self.stop_number = 5
         self.needed = 5
-        self.killed = 0
         self.game_over = False
-        self.sounds = False
-        self.music = False
-        self.english = False
-        self.level = l
-        self.center = (WIDTH / 2, 5)
-        self.bum_button = False
         self.next_level = False
 
+        # penguins information
+        self.current_penguin_number = 0
+        self.penguin_home_number = 0
+        self.last_penguin = 0
+        self.home_penguins = 0
+        self.killed = 0
+
+        # buttons
+        self.stop_button = False
+        self.umbrella_button = False
+        self.bomb_button = False
+        self.any_powerup_button = False
+        self.bum_button = False
 
     def background(self):
         # clouds
@@ -244,26 +248,17 @@ class Game:
     def run(self):
         self.playing = True
         while self.playing:
-            # print('sie gra')
-            # if self.game_over:
-            #     #self.show_go_screen()
-            #     self.game_over = False
-            #     self.next_level = True
             self.clock.tick(FPS)
             self.events()
             self.update()
             self.draw()
 
     def update(self):
-        # if self.next_level:
-        #     self.next_level = False
-        #     self.level = 2
-        #     self.new()
         if self.penguin_number == self.home_penguins:
             self.playing = False
         if self.current_penguin_number == self.penguin_number and self.killed == self.penguin_number:
             self.playing = False
-        if self.killed + self.home_penguins == self.penguin_number:
+        if self.killed + self.home_penguins >= self.penguin_number:
             self.playing = False
 
         if self.any_powerup_button:
@@ -280,17 +275,13 @@ class Game:
                 self.all_sprites.add(p)
                 self.all_penguins.add(p)
         if self.bum_button:
+            if self.sounds: explosion_snd.play()
             for p in self.penguins:
-                # exp = Explosion(self, p, p.rect.center)
-                # exp.suicide = True
-                # self.all_sprites.add(exp)
-                # self.bum.add(exp)
-                # self.killed += 1
                 p.kill()
+                self.killed += 1
         self.all_sprites.update()
 
     def events(self):
-        # Game Loop - events
         for event in pg.event.get():
             for button in self.buttons:
                 button.handle_event(event)
@@ -307,14 +298,12 @@ class Game:
                 if penguin_is_stopped and not penguin_was_stopped: break
                 if penguin_is_bombed and not penguin_was_bombed: break
 
-            # check for closing window
             if event.type == pg.QUIT:
                 if self.playing:
                     self.playing = False
                 self.running = False
 
     def draw(self):
-        # Game Loop - draw
         self.screen.fill(BGCOLOR)
         self.all_sprites.draw(self.screen)
         draw_text(self.screen, str(self.umbrella_number), 24, 300//pb - 15 , 284//pb + 3, 0)
@@ -328,9 +317,7 @@ class Game:
 
         pg.display.flip()
 
-
     def show_start_screen(self):
-        #self.screen.fill(BGCOLOR)
         file = open("settings.txt", 'r').readlines()
         if file[0].find('1') > -1: self.sounds = True
         if file[1].find('1') > -1: self.music = True
@@ -347,10 +334,9 @@ class Game:
         else: draw_text(self.screen,"Press SPACE to change settings", 25, WIDTH / 2, HEIGHT  / 2 + 50, 0)
 
         pg.display.flip()
-        self.wait_for_key_1()
+        self.wait_for_key()
 
-
-    def wait_for_key_1(self):
+    def wait_for_key(self):
         waiting = True
         while waiting:
             self.clock.tick(FPS)
@@ -362,7 +348,21 @@ class Game:
                     waiting = False
                 elif event.type == pg.KEYUP and event.key == pg.K_SPACE:
                     self.show_settings_screen()
-                    waiting = False
+                    waiting = True
+                    while waiting:
+                        self.clock.tick(FPS)
+                        for event in pg.event.get():
+                            if event.type == pg.QUIT:
+                                waiting = False
+                                self.running = False
+                            elif event.type == pg.KEYUP and event.key == pg.K_s:
+                                self.sounds = not self.sounds
+                                self.show_settings_screen()
+                            elif event.type == pg.KEYUP and event.key == pg.K_m:
+                                self.music = not self.music
+                                self.show_settings_screen()
+                            elif event.type == pg.KEYUP and event.key == pg.K_RETURN:
+                                waiting = False
 
     def show_settings_screen(self):
         screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -370,27 +370,44 @@ class Game:
         draw_text(self.screen, TITLE, 48, WIDTH / 2, HEIGHT / 4, 0)
 
         if not self.english:
-            draw_text(self.screen, "S - dźwięki", 25, WIDTH / 2, HEIGHT / 2, 0)
-            draw_text(self.screen, str(self.sounds), 25, WIDTH / 2 + 100, HEIGHT / 2, 0)
+            draw_text(self.screen, "S - dźwięki", 25, WIDTH / 2 - 45, HEIGHT / 2, 0)
+            draw_text(self.screen, str(self.sounds), 25, WIDTH / 2 + 100 - 45, HEIGHT / 2, 0)
         else:
-            draw_text(self.screen, "S - sounds", 25, WIDTH / 2, HEIGHT / 2, 0)
-            draw_text(self.screen, str(self.sounds), 25, WIDTH / 2 + 100, HEIGHT / 2, 0)
-
+            draw_text(self.screen, "S - sounds", 25, WIDTH / 2 - 45, HEIGHT / 2, 0)
+            draw_text(self.screen, str(self.sounds), 25, WIDTH / 2 + 100 - 45, HEIGHT / 2, 0)
 
         if not self.english:
-            draw_text(self.screen, "M - muzyka", 25, WIDTH / 2, HEIGHT / 2 + 50, 0)
-            draw_text(self.screen, str(self.music), 25, WIDTH / 2 + 100, HEIGHT / 2 + 50, 0)
+            draw_text(self.screen, "M - muzyka", 25, WIDTH / 2 - 45, HEIGHT / 2 + 50, 0)
+            draw_text(self.screen, str(self.music), 25, WIDTH / 2 + 100 - 45, HEIGHT / 2 + 50, 0)
         else:
-            draw_text(self.screen, "M - music", 25, WIDTH / 2, HEIGHT / 2 + 50, 0)
-            draw_text(self.screen, str(self.music), 25, WIDTH / 2 + 100, HEIGHT / 2 + 50, 0)
+            draw_text(self.screen, "M - music", 25, WIDTH / 2 - 45, HEIGHT / 2 + 50, 0)
+            draw_text(self.screen, str(self.music), 25, WIDTH / 2 + 100 - 45, HEIGHT / 2 + 50, 0)
 
-        if not self.english: draw_text(self.screen, "SPACJA - powrót", 25, WIDTH / 2, HEIGHT / 2 + 100, 0)
-        else: draw_text(self.screen, "SPACE - back", 25, WIDTH / 2, HEIGHT / 2 + 100, 0)
+        if self.english: draw_text(self.screen, "Press ENTER to start", 25, WIDTH / 2, HEIGHT / 2 + 100, 0)
+        else: draw_text(self.screen, "Naciśnij ENTER żeby rozpocząć", 25, WIDTH / 2, HEIGHT / 2 + 100, 0)
 
         pg.display.flip()
-        self.wait_for_key_2()
 
-    def wait_for_key_2(self):
+    def show_level_screen(self):
+        screen = pg.display.set_mode((WIDTH, HEIGHT))
+        screen.blit(start_background, [0, 0])
+
+        if not self.english: draw_text(self.screen, 'WYBIERZ POZIOM', 48, WIDTH / 2, HEIGHT / 4, 0)
+        else: draw_text(self.screen, 'CHOOSE LEVEL', 48, WIDTH / 2, HEIGHT / 4, 0)
+
+        if not self.english: draw_text(self.screen, '1 - łatwy', 30, WIDTH / 2, HEIGHT / 4 + 100, 0)
+        else: draw_text(self.screen, '1 - easy', 30, WIDTH / 2, HEIGHT / 4 + 100, 0)
+
+        if not self.english: draw_text(self.screen, '2 - średni', 30, WIDTH / 2, HEIGHT / 4 + 200, 0)
+        else: draw_text(self.screen, '2 - medium', 30, WIDTH / 2, HEIGHT / 4 + 200, 0)
+
+        if not self.english: draw_text(self.screen, '3 - trudny', 30, WIDTH / 2, HEIGHT / 4 + 300, 0)
+        else: draw_text(self.screen, '3 - hard', 30, WIDTH / 2, HEIGHT / 4 + 300, 0)
+
+        pg.display.flip()
+        self.wait_for_level_key()
+
+    def wait_for_level_key(self):
         waiting = True
         while waiting:
             self.clock.tick(FPS)
@@ -398,28 +415,38 @@ class Game:
                 if event.type == pg.QUIT:
                     waiting = False
                     self.running = False
-                elif event.type == pg.KEYUP and event.key == pg.K_s:
-                    self.sounds = not self.sounds
-                    self.show_settings_screen()
-                elif event.type == pg.KEYUP and event.key == pg.K_m:
-                    self.music = not self.music
-                    self.show_settings_screen()
-                elif event.type == pg.KEYUP and event.key == pg.K_SPACE:
-                    self.show_start_screen()
+                elif event.type == pg.KEYUP and event.key == pg.K_1:
+                    self.level = 1
+                    waiting = False
+                elif event.type == pg.KEYUP and event.key == pg.K_2:
+                    self.level = 2
+                    waiting = False
+                elif event.type == pg.KEYUP and event.key == pg.K_3:
+                    self.level = 3
                     waiting = False
 
     def show_go_screen(self):
-        # game over/continue
         if not self.running:
             return
-        self.screen.fill(BGCOLOR)
-        draw_text(self.screen, "GAME OVER", 48, WIDTH / 2, HEIGHT / 4, 0)
-        draw_text(self.screen, "Score: " + str(100 * self.home_penguins / self.penguin_number) + '%', 22, WIDTH / 2, HEIGHT / 2, 0)
-        draw_text(self.screen,"Press a key to play again", 22, WIDTH / 2, HEIGHT * 3 / 4, 0)
-        pg.display.flip()
-        self.wait_for_key(pg.K_RETURN)
+        screen = pg.display.set_mode((WIDTH, HEIGHT))
+        screen.blit(start_background, [0, 0])
 
-    def wait_for_key(self, key):
+        if self.english:
+            if self.home_penguins / self.penguin_number > 0.4:
+                draw_text(self.screen, "YOU WON!", 48, WIDTH / 2, HEIGHT / 4, 0)
+            else: draw_text(self.screen, "GAME OVER", 48, WIDTH / 2, HEIGHT / 4, 0)
+            draw_text(self.screen, "Score: " + str(int(100 * self.home_penguins / self.penguin_number)) + '%', 22, WIDTH / 2, HEIGHT / 2, 0)
+            draw_text(self.screen, "Needed: " + '50%', 22, WIDTH / 2, HEIGHT / 2 + 100, 0)
+        else:
+            if self.home_penguins / self.penguin_number > 0.4:
+                draw_text(self.screen, "ZWYCIĘSTWO!", 48, WIDTH / 2, HEIGHT / 4, 0)
+                if self.level < 3: draw_text(self.screen, "Spróbuj szczęścia na wyższym poziomie :)", 30, WIDTH / 2, HEIGHT / 4 - 40, 0)
+            else: draw_text(self.screen, "GRA SKOŃCZONA", 48, WIDTH / 2, HEIGHT / 4, 0)
+            draw_text(self.screen, "Wynik: " + str(int(100 * self.home_penguins / self.penguin_number)) + '%', 22, WIDTH / 2, HEIGHT / 2, 0)
+            draw_text(self.screen, "Wymagany wynik: " + '50%', 22, WIDTH / 2, HEIGHT / 2 + 100, 0)
+
+        pg.display.flip()
+
         waiting = True
         while waiting:
             self.clock.tick(FPS)
@@ -427,13 +454,14 @@ class Game:
                 if event.type == pg.QUIT:
                     waiting = False
                     self.running = False
-                if event.type == pg.KEYUP and event.key == key:
-                    waiting = False
 
-g = Game(1)
-g.show_start_screen()
-while g.running:
-    g.new()
-    g.show_go_screen()
-pg.quit()
+if __name__ == "__main__":
+    g = Game()
+    g.show_start_screen()
+    while g.running:
+        g.show_level_screen()
+        if g.running:
+            g.new()
+            g.show_go_screen()
+    pg.quit()
 

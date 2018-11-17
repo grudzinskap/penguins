@@ -9,7 +9,6 @@ def draw_text(surf, text, size, x, y, bold):
     text_rect.midtop = (x, y)
     surf.blit(text_surface, text_rect)
 
-
 class Umbrella_button(pg.sprite.Sprite):
     def __init__(self, game, x, y):
         pg.sprite.Sprite.__init__(self)
@@ -25,19 +24,28 @@ class Umbrella_button(pg.sprite.Sprite):
     def handle_event(self, event):
         if event.type == pg.MOUSEBUTTONDOWN and self.rect.collidepoint(event.pos):
             if not self.game.any_powerup_button:
-                button_snd.play()
+                if self.game.sounds: button_snd.play()
                 self.game.umbrella_button = not self.game.umbrella_button
                 self.game.any_powerup_button = not self.game.any_powerup_button
                 self.pressed = not self.pressed
                 self.image = self.button_images[self.pressed]
             elif self.game.any_powerup_button and self.pressed:
-                button_snd.play()
+                if self.game.sounds: button_snd.play()
                 self.pressed = not self.pressed
                 self.image = self.button_images[self.pressed]
                 self.game.any_powerup_button = not self.game.any_powerup_button
                 self.game.umbrella_button = not self.game.umbrella_button
+            elif self.game.any_powerup_button and not self.pressed:
+                self.game.stop_button = False
+                self.game.bomb_button = False
+                self.game.umbrella_button = True
+                self.pressed = True
+                self.image = self.button_images[self.pressed]
 
-
+    def update(self):
+        if self.game.umbrella_button == False:
+            self.pressed = False
+            self.image = self.button_images[self.pressed]
 
 class Stop_button(pg.sprite.Sprite):
     def __init__(self, game, x, y):
@@ -54,18 +62,28 @@ class Stop_button(pg.sprite.Sprite):
     def handle_event(self, event):
         if event.type == pg.MOUSEBUTTONDOWN and self.rect.collidepoint(event.pos):
             if not self.game.any_powerup_button:
-                button_snd.play()
+                if self.game.sounds: button_snd.play()
                 self.game.stop_button = not self.game.stop_button
                 self.game.any_powerup_button = not self.game.any_powerup_button
                 self.pressed = not self.pressed
                 self.image = self.button_images[self.pressed]
             elif self.game.any_powerup_button and self.pressed:
-                button_snd.play()
+                if self.game.sounds: button_snd.play()
                 self.pressed = not self.pressed
                 self.image = self.button_images[self.pressed]
                 self.game.any_powerup_button = not self.game.any_powerup_button
                 self.game.stop_button = not self.game.stop_button
+            elif self.game.any_powerup_button and not self.pressed:
+                self.game.umbrella_button = False
+                self.game.bomb_button = False
+                self.game.stop_button = True
+                self.pressed = True
+                self.image = self.button_images[self.pressed]
 
+    def update(self):
+        if self.game.stop_button == False:
+            self.pressed = False
+            self.image = self.button_images[self.pressed]
 
 class Bomb_button(pg.sprite.Sprite):
     def __init__(self, game, x, y):
@@ -82,17 +100,28 @@ class Bomb_button(pg.sprite.Sprite):
     def handle_event(self, event):
         if event.type == pg.MOUSEBUTTONDOWN and self.rect.collidepoint(event.pos):
             if not self.game.any_powerup_button:
-                button_snd.play()
+                if self.game.sounds: button_snd.play()
                 self.game.bomb_button = not self.game.bomb_button
                 self.game.any_powerup_button = not self.game.any_powerup_button
                 self.pressed = not self.pressed
                 self.image = self.button_images[self.pressed]
             elif self.game.any_powerup_button and self.pressed:
-                button_snd.play()
+                if self.game.sounds: button_snd.play()
                 self.pressed = not self.pressed
                 self.image = self.button_images[self.pressed]
                 self.game.any_powerup_button = not self.game.any_powerup_button
                 self.game.bomb_button = not self.game.bomb_button
+            elif self.game.any_powerup_button and not self.pressed:
+                self.game.stop_button = False
+                self.game.umbrella_button = False
+                self.game.bomb_button = True
+                self.pressed = True
+                self.image = self.button_images[self.pressed]
+
+    def update(self):
+        if self.game.bomb_button == False:
+            self.pressed = False
+            self.image = self.button_images[self.pressed]
 
 class Bum_button(pg.sprite.Sprite):
     def __init__(self, game, x, y):
@@ -108,12 +137,10 @@ class Bum_button(pg.sprite.Sprite):
 
     def handle_event(self, event):
         if event.type == pg.MOUSEBUTTONDOWN and self.rect.collidepoint(event.pos) and self.game.current_penguin_number == self.game.penguin_number:
-            button_snd.play()
+            if self.game.sounds: button_snd.play()
             self.pressed = True
             self.image = self.button_images[self.pressed]
             self.game.bum_button = True
-
-
 
 class Penguin(pg.sprite.Sprite):
     def __init__(self, game):
@@ -126,24 +153,19 @@ class Penguin(pg.sprite.Sprite):
         self.umbrella = False
         self.stop = False
         self.walk = False
+        self.dropping = True
+        self.right = True
+        self.fly = False
+        self.bomb = False
         self.load_images()
         self.last_update = 0
         self.current_frame = 0
         self.vx = 0
         self.vy = 2
-        self.umbrella = False
-        self.bomb = False
         self.radius = int(self.rect.width * .85) //2
         self.last_stop_penguin_hit = 0
-        self.g = 0.5
-        self.dropping = True
-        self.right = True
-        self.fly = False
+
         self.last_h = HEIGHT
-        #pg.draw.circle(self.image, RED, (self.rect.width//2 + 5, self.rect.height//2), self.radius)
-
-
-
 
     def update(self):
         if self.dropping:
@@ -171,7 +193,6 @@ class Penguin(pg.sprite.Sprite):
                 if self.right:
                     self.vx = 1
                 else: self.vx = -1
-                #self.rect.bottom = ground_hit[0].rect.top
 
         elif self.walk:
             if self.rect.left < 0 or self.rect.right > WIDTH:
@@ -217,10 +238,7 @@ class Penguin(pg.sprite.Sprite):
                 self.game.killed += 1
                 self.kill()
 
-
-
     def stopping(self):
-        #self.radius = int(self.rect.width) // 2
         self.walk = False
         self.stop = True
         self.vx = 0
@@ -230,13 +248,9 @@ class Penguin(pg.sprite.Sprite):
         self.game.stop_penguins.add(self)
 
     def flying(self):
-        #self.radius = int(self.rect.width) // 2
         x, y = self.rect.x, self.rect.y
         self.image = image_u
         self.image.set_colorkey(WHITE)
-        #self.rect = self.image.get_rect()
-        #self.rect.x, self.rect.y = x, y
-
 
     def handle_event(self, event):
         if event.type == pg.MOUSEBUTTONDOWN:
@@ -256,13 +270,6 @@ class Penguin(pg.sprite.Sprite):
                 self.bomb = True
                 self.game.killed += 1
                 self.kill()
-        # if self.game.any_powerup_button:
-        #     if event.type == pg.MOUSEMOTION:
-        #         if self.rect.collidepoint(event.pos):
-        #             pg.mouse.set_cursor(*pg.cursors.broken_x)
-        #         else:
-        #             pg.mouse.set_cursor(*pg.cursors.arrow)
-
 
     def load_images(self):
         self.walk_frames_r = [image_p_w1_r, image_p_w2_r]
@@ -281,24 +288,8 @@ class Penguin(pg.sprite.Sprite):
         x, y = self.rect.x, self.rect.y
         if self.vx > 0:
             self.image = self.walk_frames_r[self.current_frame]
-            #self.rect = self.image.get_rect()
-            #self.rect.x, self.rect.y = x, y
         elif self.vx < 0:
             self.image = self.walk_frames_l[self.current_frame]
-            #self.rect = self.image.get_rect()
-            #self.rect.x, self.rect.y = x, y
-
-
-
-class Platform(pg.sprite.Sprite):
-    def __init__(self, game, image, x, y):
-        pg.sprite.Sprite.__init__(self)
-        self.game = game
-        self.image = image
-        #self.image.set_colorkey(WHITE)
-        self.rect = self.image.get_rect()
-        self.rect.x = x
-        self.rect.y = y
 
 class Explosion(pg.sprite.Sprite):
     def __init__(self, game, penguin, center):
@@ -314,8 +305,8 @@ class Explosion(pg.sprite.Sprite):
         self.suicide = False
 
     def update(self):
-        pg.draw.circle(self.image, RED, (self.rect.width // 2, self.rect.height // 2), self.radius)
         now = pg.time.get_ticks()
+        if self.rect.bottom > HEIGHT - 110: self.suicide = True
         if self.frame == 1 and self.game.sounds: explosion_snd.play()
         if now - self.last_update > self.frame_rate:
             self.frame += 1
@@ -328,16 +319,25 @@ class Explosion(pg.sprite.Sprite):
                 self.rect = self.image.get_rect()
                 self.rect.center = center
 
+class Platform(pg.sprite.Sprite):
+    def __init__(self, game, image, x, y):
+        pg.sprite.Sprite.__init__(self)
+        self.game = game
+        self.image = image
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
 
 class Fridge(pg.sprite.Sprite):
     def __init__(self, game, x, y):
         pg.sprite.Sprite.__init__(self)
         self.game = game
         self.image = image_fridge
-        #self.image.set_colorkey(WHITE)
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
         self.radius = int(.8 *self.rect.width) // 3
-        #pg.draw.rect(self.image, BLUE, (self.rect.x, self.rect.y, self.rect.width, self.rect.height))
-        #pg.draw.circle(self.image, RED, (self.rect.width // 2, self.rect.height // 2), self.radius)
+
+
+
+
